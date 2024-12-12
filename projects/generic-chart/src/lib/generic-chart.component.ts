@@ -5,7 +5,6 @@ import { Component, OnInit } from '@angular/core';
   template: `
     <p>
       generic-chart works!
-      <lib-bar-chart></lib-bar-chart>
     </p>
   `,
   styles: [
