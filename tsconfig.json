@@ -11,6 +11,18 @@
       "generic-chart": [
         "dist/generic-chart/generic-chart",
         "dist/generic-chart"
+      ],
+      "generic-table": [
+        "dist/generic-table/generic-table",
+        "dist/generic-table"
+      ],
+      "table": [
+        "dist/table/table",
+        "dist/table"
+      ],
+      "tables": [
+        "dist/tables/tables",
+        "dist/tables"
       ]
     },
     "noPropertyAccessFromIndexSignature": true,
