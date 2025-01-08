@@ -1,33 +1,71 @@
 <div class="mat-elevation-z8">
-  <table mat-table [dataSource]="dataSource" matSort class="mat-elevation-z8">
-    <ng-container *ngFor="let column of displayedColumns" [matColumnDef]="column">
-      <th mat-header-cell *matHeaderCellDef mat-sort-header>
-        <div class="header-container">
-          <span class="header-label" >{{ getHeaderLabel(column) }}</span>
-          <mat-form-field appearance="outline" class="header-input" *ngIf="isSearchable(column)">
-            <input 
-              matInput
-              type="text"
-              placeholder="Search"
-              (click)="$event.stopPropagation()" 
-              (input)="onSearch($event, column)"
-            />
-          </mat-form-field>
-          <mat-form-field appearance="outline"  *ngIf="isFilterable(column)">
-          <mat-select   (selectionChange)="onFilter($event, column)">
-          <mat-option *ngFor="let option of options" [value]="option.value">
-            {{ option.label }}
-          </mat-option>
-        </mat-select>
-        </mat-form-field>
+  <div class="table-container">
+    <div class="header">
+      <div class="title">{{title}}</div>
+      <div>
+        <button mat-raised-button color="primary" (click)="openPopup()" style="background-color: #832215; color: #fff;" >Download</button>
+        {{showPopup}}
+      </div>
+    </div>
+    <table mat-table [dataSource]="dataSource" class="full-width-table">
+      <ng-container *ngFor="let column of displayedColumns; let i = index" [matColumnDef]="column">
+        <th mat-header-cell *matHeaderCellDef>
+          <div class="header-container">
+            <div class="header-label">{{ getHeaderLabel(column) }}  <span class="material-symbols-outlined" (click)="onSort(column)">
+              unfold_more
+              </span></div>
+            <mat-form-field appearance="outline" class="header-input" *ngIf="isSearchable(column)">
+              <input 
+                matInput
+                type="text"
+                placeholder="Search"
+                (click)="$event.stopPropagation()" 
+                (input)="onSearch($event, column)"
+              /> 
+            </mat-form-field>
+            <mat-form-field appearance="outline" *ngIf="isFilterable(column)">
+              <mat-select (selectionChange)="onFilter($event, column)">
+                <mat-option *ngFor="let option of options" [value]="option.value">
+                  {{ option.label }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+          </div>
+        </th>
+        <td mat-cell *matCellDef="let element" [class.fixed-column]="i === 0" matTooltip="{{ element[column] }}">
+          <div class="ellipsis">{{ element[column] }}</div>
+        </td>
+        <div [class.fixed-column]="i !== 0" style="overflow: auto;">
+          <td mat-cell *matCellDef="let element">
+            <div class="cell-content">{{ element[column] }}</div>
+          </td>
         </div>
-      </th>
-      <td mat-cell *matCellDef="let element">{{ element[column] }}</td>
-    </ng-container>
+      </ng-container>
 
-    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
-    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
-  </table>
-  <mat-paginator [pageSizeOptions]="[5, 10, 25]" showFirstLastButtons></mat-paginator>
-  
+      <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+      <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+  </div>
+  <mat-paginator [pageSizeOptions]="[25, 50, 100]" showFirstLastButtons></mat-paginator>
+
+  <mat-dialog-content *ngIf="showPopup" class="centered-popup">
+    <h2>Select Date Range</h2>
+    <mat-form-field appearance="fill">
+      <mat-label>Start Date</mat-label>
+      <input matInput [matDatepicker]="startPicker" [(ngModel)]="startDate" (ngModelChange)="validateDates()">
+      <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+      <mat-datepicker #startPicker></mat-datepicker>
+    </mat-form-field>
+    <mat-form-field appearance="fill">
+      <mat-label>End Date</mat-label>
+      <input matInput [matDatepicker]="endPicker" [(ngModel)]="endDate" (ngModelChange)="validateDates()">
+      <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+      <mat-datepicker #endPicker></mat-datepicker>
+    </mat-form-field>
+    <div *ngIf="dateError" class="error">End date should not be less than start date</div>
+    <div class="actions">
+      <button mat-button (click)="closePopup()">Cancel</button>
+      <button mat-button style="background-color: #832215; color: #fff;" (click)="submitDates()" [disabled]="dateError">Submit</button>
+    </div>
+  </mat-dialog-content>
 </div>
