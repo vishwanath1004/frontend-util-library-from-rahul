@@ -9,11 +9,8 @@ import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatInputModule } from '@angular/material/input';
 import { CommonModule } from '@angular/common';
-
-
-
-
-
+import {MatIconModule} from '@angular/material/icon';
+import {MatButtonModule} from '@angular/material/button';
 
 @NgModule({
   declarations: [
@@ -28,7 +25,9 @@ import { CommonModule } from '@angular/common';
     MatSelectModule,
     MatFormFieldModule,
     MatInputModule,
-    MatOptionModule
+    MatOptionModule,
+    MatIconModule,
+    MatButtonModule
   ],
   schemas:[NO_ERRORS_SCHEMA],
   exports: [

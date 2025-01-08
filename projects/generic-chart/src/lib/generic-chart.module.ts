@@ -4,8 +4,7 @@ import { BarChartComponent } from './components/bar-chart/bar-chart.component';
 import { CommonModule } from '@angular/common';
 import { LineChartComponent } from './components/line-chart/line-chart.component';
 import { ChartComponent } from './components/chart/chart.component';
-
-
+import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
   declarations: [
@@ -15,7 +14,8 @@ import { ChartComponent } from './components/chart/chart.component';
     ChartComponent
   ],
   imports: [
-    CommonModule
+    CommonModule,
+    HttpClientModule
   ],
   exports: [
     GenericChartComponent,
