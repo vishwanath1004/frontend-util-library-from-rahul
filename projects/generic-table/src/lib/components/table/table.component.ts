@@ -5,6 +5,9 @@ import { MatSort } from '@angular/material/sort';
 import { GenericTableService } from '../../generic-table.service';
 import { MatDialog } from '@angular/material/dialog';
 import * as moment from 'moment';
+import { DatePipe } from '@angular/common';
+import { Subject } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
 
 @Component({
   selector: 'lib-table',
@@ -22,50 +25,56 @@ export class TableComponent implements OnInit, AfterViewInit {
   @Input() title: any = true;
   dataSource = new MatTableDataSource<any>();
   displayedColumns: string[] = [];
-
-  columns = [
-    { key: 'id', label: 'Id', search: true, filter: false },
-    { key: 'name1', label: 'Name', search: true, filter: false },
-    { key: 'age', label: 'Age', search: false, filter: true },
-    { key: 'department', label: 'Department Name', search: false, filter: true },
-    { key: 'salaryAmount', label: 'Salary Amount', search: false, filter: true },
-  ];
-
-  data = [
-    { id: 'abc', name1: 'Alice', age: 25, department: 'Engineering', salaryAmount: 2500 },
-    { id: 2, name1: 'Bob', age: 30, department: 'Marketing', salaryAmount: 3000 },
-    { id: 3, name1: 'Charlie', age: 35, department: 'HR', salaryAmount: 2800 },
-    { id: 4, name1: 'Dave', age: 28, department: 'Finance', salaryAmount: 3200 },
-  ];
-
+  sortType ="ASC";
+  sortColumn: any;
+  columns :any= [];
+  isDownload :boolean = false;
+  noData:boolean = false;
+  data :any= [];
+  searchColmn :any =[]
+  searchText :any =[]
   options = [{ label: 'Lable 1', value: 'label1' }, { label: 'Lable 1', value: 'label1' }];
   showPopup = false;
   startDate: any;
   endDate: any;
   dateError = false;
 
-  constructor(private apiService: GenericTableService, private dialog: MatDialog) { }
+  private searchSubject = new Subject<{ event: any, key: any }>();
+
+  constructor(private apiService: GenericTableService, private dialog: MatDialog,
+    private datePipe: DatePipe
+  ) { }
 
   ngOnInit(): void {
     console.log("getTableData == ngOnInit");
     setTimeout(() => {
-      this.getTableData();
+      this.url +=`&search_column=${this.searchColmn}&search_value=${this.searchText}&sort_column=${this.sortColumn}&sort_type=${this.sortType}&download_csv=${this.isDownload}`;
+      this.getTableData(this.url);
     }, 100);
+
+    this.searchSubject.pipe(
+      debounceTime(300)
+    ).subscribe(({ event, key }) => {
+      this.performSearch(event, key);
+    });
   }
 
-  getTableData() {
-    const paylaod = { url: this.url, headers: this.headers }
+  getTableData(apiUrl:any) {
+    const paylaod = { url: apiUrl, headers: this.headers }
     this.apiService.get(paylaod).then((data: any) => {
-      if (data.result) {
-        // this.columns = data.result.config ? data.result.config.columns :[];
-        // this.data = data.result.data ? data.result.data : []; 
+      if (data.result?.data) {
+        this.isDownload = false;
+        this.columns = data.result.config ? data.result.config.columns :[];
+        this.data = data.result.data ? data.result.data : []; 
         this.initializeTable();
       }
     })
   }
 
   onSort(data: any) {
-    console.log("on sort", data);
+    this.sortColumn = data;
+    this.sortType = this.sortType === "ASC" ? "DESC" : "ASC";
+    this.getTableData(this.url);
   }
   ngAfterViewInit(): void {
     this.dataSource.paginator = this.paginator;
@@ -73,7 +82,9 @@ export class TableComponent implements OnInit, AfterViewInit {
   }
   initializeTable(): void {
     this.dataSource.data = this.data;
-    this.displayedColumns = Object.keys(this.data[0]);
+    if(this.data?.length){
+      this.displayedColumns = Object.keys(this.data[0]);
+    }
   }
 
   getHeaderLabel(columnKey: string): string {
@@ -83,11 +94,25 @@ export class TableComponent implements OnInit, AfterViewInit {
 
   filteredData = [...this.data];
 
-  onSearch(event: any, key: string) {
-    const value = event.target.value.toLowerCase();
-    this.filteredData = this.data.filter((item: any) =>
-      item[key].toString().toLowerCase().includes(value)
-    );
+  onSearch(event: any, key: any) {
+    this.searchSubject.next({ event, key });
+  }
+
+  performSearch(event: any, key: any) {
+    if (event.target.value && !this.searchColmn.includes(key)) {
+      this.searchColmn.push(key);
+      this.searchText.push(event.target.value);
+    }
+    if (!event.target.value) {
+      const index = this.searchColmn.indexOf(key);
+      if (index > -1) {
+        this.searchColmn.splice(index, 1); 
+        this.searchText.splice(index, 1); 
+      }
+    }
+    this.url = this.url.replace(/search_column=[^&]*/, `search_column=${this.searchColmn}`);
+    this.url = this.url.replace(/search_value=[^&]*/, `search_value=${ this.searchText}`);
+    this.getTableData(this.url);
   }
 
   onFilter(event: any, key: string) {
@@ -129,11 +154,33 @@ export class TableComponent implements OnInit, AfterViewInit {
 
   submitDates() {
     if (!this.dateError) {
-      // const startEpoch = moment(this.startDate).unix();
-      // const endEpoch = moment(this.endDate).unix();
-      console.log('Start Date (Epoch):', this.startDate);
-      console.log('End Date (Epoch):', this.endDate);
-      this.closePopup();
+      const startDateEpoch = this.startDate.getTime() / 1000;
+      const endDateEpoch = this.endDate.getTime() / 1000;
+      this.downloadCSV(startDateEpoch,endDateEpoch);
     }
+  }
+  downloadCSV(startDate :any, endDate:any){
+    this.url =  this.url.replace(/start_date=[^&]*/, `start_date=${startDate}`);
+    this.url =  this.url.replace(/end_date=[^&]*/, `end_date=${endDate}`);
+    this.url =  this.url.replace(/download_csv=[^&]*/, `download_csv=true`);
+    this.apiService.get({url :  this.url, headers: this.headers}).then((data:any)=>{  
+      if(data.result && data.result.reportsDownloadUrl){
+        this.noData = false;
+
+        const link = document.createElement('a');
+        link.href = data.result.reportsDownloadUrl;
+        const timestamp: number = new Date().getTime();
+        link.download = `${this.title}${timestamp}.csv`; 
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        this.closePopup();
+      }else{
+        this.noData = true;
+      }
+    })
+  }
+  formatDate(date: Date | null): string {
+    return date ? this.datePipe.transform(date, 'dd/MM/yyyy') || '' : '';
   }
 }
