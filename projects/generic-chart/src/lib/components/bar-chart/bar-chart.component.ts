@@ -12,6 +12,7 @@ export class BarChartComponent implements OnInit {
   @Input() headers: any;
   @Input() labels: any
   @Input() legends :any;
+  @Input() sessionType :any;
 data : any
   private chart: Chart | undefined;
   constructor(private cdr: ChangeDetectorRef, private apiService : GenericChartService) { }
@@ -42,7 +43,7 @@ data : any
   async getChartData(){
     const paylaod  ={url : this.url, headers : this.headers}
     this.apiService.get(paylaod).then(async (data: any) => {
-     this.data = await this.apiService.transformApiResponse(data,this.legends );
+     this.data = await this.apiService.transformApiResponse(data,this.legends[this.sessionType] );
       this.initializeChart();
     })
   }
