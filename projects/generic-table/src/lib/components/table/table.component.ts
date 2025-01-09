@@ -33,6 +33,8 @@ export class TableComponent implements OnInit, AfterViewInit {
   data :any= [];
   searchColmn :any =[]
   searchText :any =[]
+  filterColmn :any =[]
+  filterText :any =[]
   options = [{ label: 'Lable 1', value: 'label1' }, { label: 'Lable 1', value: 'label1' }];
   showPopup = false;
   startDate: any;
@@ -48,7 +50,7 @@ export class TableComponent implements OnInit, AfterViewInit {
   ngOnInit(): void {
     console.log("getTableData == ngOnInit");
     setTimeout(() => {
-      this.url +=`&search_column=${this.searchColmn}&search_value=${this.searchText}&sort_column=${this.sortColumn}&sort_type=${this.sortType}&download_csv=${this.isDownload}`;
+      this.url +=`&search_column=${this.searchColmn}&search_value=${this.searchText}&sort_column=${this.sortColumn}&sort_type=${this.sortType}&filter_column=${this.filterColmn}&filter_value=${this.filterText}&download_csv=${this.isDownload}`;
       this.getTableData(this.url);
     }, 100);
 
@@ -116,10 +118,24 @@ export class TableComponent implements OnInit, AfterViewInit {
   }
 
   onFilter(event: any, key: string) {
-    const value = event.target.value;
-    this.filteredData = value
-      ? this.data.filter((item: any) => item[key].toString() === value)
-      : [...this.data];
+    const value = event.value;
+    if (value.length && !this.filterColmn.includes(key)) {
+      this.filterColmn.push(key);
+      this.filterText.push(value);
+    }else 
+    if(value.length && this.filterColmn.includes(key)){
+      this.filterText.push(value);
+    }else 
+    if (!value?.length) {
+      const index = this.filterColmn.indexOf(key);
+      if (index > -1) {
+        this.filterColmn.splice(index, 1); 
+        this.filterText.splice(index, 1); 
+      }
+    }
+    this.url = this.url.replace(/filter_column=[^&]*/, `filter_column=${this.filterColmn}`);
+    this.url = this.url.replace(/filter_value=[^&]*/, `filter_value=${ this.filterText}`);
+    this.getTableData(this.url);
   }
 
   getFilterOptions(key: string) {
