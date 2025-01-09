@@ -12,12 +12,12 @@
    <div style="overflow: auto;">
     <table mat-table [dataSource]="dataSource" class="full-width-table">
       <ng-container *ngFor="let column of displayedColumns; let i = index" [matColumnDef]="column">
-        <th mat-header-cell *matHeaderCellDef>
+        <th mat-header-cell *matHeaderCellDef style="border-bottom: 1px solid #ccc;">
           <div class="header-container">
             <div class="header-label">{{ getHeaderLabel(column) }}  <mat-icon class="material-symbols-outlined" style="cursor: pointer;" (click)="onSort(column)">
               swap_vert
             </mat-icon></div>
-            <div class="custom-input-box">
+            <!-- <div class="custom-input-box">
               <span class="search-icon">
                 <mat-icon>search</mat-icon>
               </span>
@@ -28,9 +28,9 @@
                 (click)="$event.stopPropagation()" 
                 (input)="onSearch($event, column)" 
                 #searchbar />
-            </div>
-            <!-- <mat-form-field appearance="outline" *ngIf="isFilterable(column)">
-              <mat-select (selectionChange)="onFilter($event, column)">
+            </div> -->
+            <!-- <mat-form-field appearance="outline" *ngIf="isFilterable(column)" style="border-radius: 8px; ">
+              <mat-select (selectionChange)="onFilter($event, column)" multiple placeholder="Select">
                 <mat-option *ngFor="let option of options" [value]="option.value">
                   {{ option.label }}
                 </mat-option>
