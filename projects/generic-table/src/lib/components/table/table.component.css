@@ -111,9 +111,8 @@ td:not(.sticky-column) {
 
 .mat-header-cell {
   font-weight: bold;
-  width: 220px;
+  width: 230px;
   border-bottom-width: 0px;
-
 }
 
 .mat-row:hover {
@@ -210,4 +209,19 @@ td:not(.sticky-column) {
   display: flex;
   align-items: center;
   color:#832215
+}
+
+
+
+
+.mat-form-field {
+  border-radius: 4px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+.mat-form-field-wrapper {
+  height: 100%;
 }
