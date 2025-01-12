@@ -1,7 +1,12 @@
-import { AfterViewInit, Component, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, OnInit, ViewChild, Input } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
+import { GenericTableService } from '../../generic-table.service';
+import { DatePipe } from '@angular/common';
+import { Subject } from 'rxjs';
+import { debounceTime } from 'rxjs/operators';
+import { paginatorConstants } from '../../constants/paginatorConstats';
 
 @Component({
   selector: 'lib-table',
@@ -10,78 +15,245 @@ import { MatSort } from '@angular/material/sort';
 })
 export class TableComponent implements OnInit, AfterViewInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
+  pageSize = paginatorConstants.defaultPageSize;
+  pageSizeOptions = paginatorConstants.pageSizeOptions;
   @ViewChild(MatSort) sort!: MatSort;
-
+  @Input() url: any;
+  @Input() headers: any;
+  @Input() labels: any;
+  @Input() legends: any;
+  @Input() showDownload: boolean = true;
+  @Input() title: any = true;
+  body: any = {};
   dataSource = new MatTableDataSource<any>();
   displayedColumns: string[] = [];
-  
-  columns = [
-    { key: 'id', label: 'Id', searchable: true, filterable: false },
-    { key: 'name1', label: 'Name', searchable: true, filterable: false },
-    { key: 'age', label: 'Age', searchable: false, filterable: true },
-    { key: 'department', label: 'Department Name', searchable: false, filterable: true },
-    { key: 'salaryAmount', label: 'Salary Amount', searchable: false, filterable: true },
-  ];
-  
-  data = [
-    { id: 'abc', name1: 'Alice', age: 25, department: 'Engineering', salaryAmount: 2500 },
-    { id: 2, name1: 'Bob', age: 30, department: 'Marketing', salaryAmount: 3000 },
-    { id: 3, name1: 'Charlie', age: 35, department: 'HR', salaryAmount: 2800 },
-    { id: 4, name1: 'Dave', age: 28, department: 'Finance', salaryAmount: 3200 },
-  ];
-  
-  options =[{label:'Lable 1', value:'label1'}, {label:'Lable 1', value:'label1'}]
+  sortType ="ASC";
+  sortColumn: any;
+  columns :any= [];
+  isDownload :boolean = false;
+  noData:boolean = false;
+  data :any= [];
+  searchColmn :any =[]
+  searchText :any =[]
+  filterColmn :any =[]
+  filterText :any =[]
+  options:any = [];
+  showPopup = false;
+  startDate: any;
+  endDate: any;
+  dateError = false;
 
+  private searchSubject = new Subject<{ event: any, key: any }>();
+  page: any = 1;
+  tableDataCount: any;
+  filters: any;
+  filteredObjects: any;
 
-  constructor(){}
-
-  
+  constructor(private apiService: GenericTableService,
+    private datePipe: DatePipe
+  ) { }
 
   ngOnInit(): void {
-    this.initializeTable(this.data);
+    setTimeout(() => {
+      this.url +=`&sort_column=${this.sortColumn}&sort_type=${this.sortType}&download_csv=${this.isDownload}&pageNo=${this.page}&Limit=${this.pageSize}`;
+      // this.body = {
+      //   "filters":{
+      //     "sessions_created_by": this.filterColmn,
+      //     "filter_value": this.filterText
+      //   },
+      //   "search": {
+      //     "search_column": this.searchColmn,
+      //     "search_value": this.searchText
+      //   }
+      // }
+      this.getTableData(this.url, this.body);
+    }, 100);
+
+    this.searchSubject.pipe(
+      debounceTime(300)
+    ).subscribe(({ event, key }) => {
+      this.performSearch(event, key);
+    });
   }
 
+  getTableData(apiUrl:any, apiBody: any) {
+    const paylaod = { url: apiUrl, headers: this.headers, body: apiBody }
+    this.apiService.post(paylaod).then((data: any) => {
+      if (data.result?.data) {
+        this.isDownload = false;
+        this.columns = data.result.config ? data.result.config.columns :[];
+        this.data = data.result.data ? data.result.data : []; 
+        this.tableDataCount = data.result.data.length ? data.result.data.length : "";
+        this.filters = data.result.filters ? data.result.filters: {};
+        this.initializeTable();
+        //// remove after sumans fix
+        this.transformData();
+        /////
+        this.filteredObjects = this.getFilteredColumns(this.filters, this.columns);
+      }
+    })
+  }
+
+  //// remove after sumans fix
+  transformData(): void {
+    for (const key in this.filters) {
+      if (
+        Array.isArray(this.filters[key]) &&
+        this.filters[key].every((item: string | number | boolean) => typeof item !== 'object')
+      ) {
+        this.filters[key] = this.filters[key].map((item: string | number | boolean) => ({
+          label: item,
+          value: item
+        }));
+      }
+    }
+  }
+  
+
+  ///////
+
+  onSort(data: any) {
+    this.sortColumn = data;
+    this.sortType = this.sortType === "ASC" ? "DESC" : "ASC";
+    this.getTableData(this.url, this.body);
+  }
   ngAfterViewInit(): void {
     this.dataSource.paginator = this.paginator;
     this.dataSource.sort = this.sort;
   }
-
-  initializeTable(data: any[]): void {
-    this.dataSource.data = data;
-    this.displayedColumns = Object.keys(data[0]);
+  initializeTable(): void {
+    this.dataSource.data = this.data;
+    if(this.data?.length){
+      this.displayedColumns = Object.keys(this.data[0]);
+    }
   }
 
   getHeaderLabel(columnKey: string): string {
-    const column = this.columns.find(col => col.key === columnKey);
+    const column = this.columns.find((col: any) => col.key === columnKey);
     return column ? column.label : columnKey;
   }
 
   filteredData = [...this.data];
 
-  onSearch(event: any, key: string) {
-    const value = event.target.value.toLowerCase();
-    this.filteredData = this.data.filter((item:any) =>
-      item[key].toString().toLowerCase().includes(value)
-    );
+  onSearch(event: any, key: any) {
+    this.searchSubject.next({ event, key });
+  }
+
+  performSearch(event: any, key: any) {
+    if (event.target.value && !this.searchColmn.includes(key)) {
+      this.searchColmn.push(key);
+      this.searchText.push(event.target.value);
+    }
+    if (!event.target.value) {
+      const index = this.searchColmn.indexOf(key);
+      if (index > -1) {
+        this.searchColmn.splice(index, 1); 
+        this.searchText.splice(index, 1); 
+      }
+    }
+    // this.url = this.url.replace(/search_column=[^&]*/, `search_column=${this.searchColmn}`);
+    // this.url = this.url.replace(/search_value=[^&]*/, `search_value=${ this.searchText}`);
+    this.getTableData(this.url, this.body);
   }
 
   onFilter(event: any, key: string) {
-    const value = event.target.value;
-    this.filteredData = value
-      ? this.data.filter((item:any) => item[key].toString() === value)
-      : [...this.data];
+    const value = event.value;
+    if (value.length && !this.filterColmn.includes(key)) {
+      this.filterColmn.push(key);
+      this.filterText.push(value);
+    }else 
+    if(value.length && this.filterColmn.includes(key)){
+      this.filterText.push(value);
+    }else 
+    if (!value?.length) {
+      const index = this.filterColmn.indexOf(key);
+      if (index > -1) {
+        this.filterColmn.splice(index, 1); 
+        this.filterText.splice(index, 1); 
+      }
+    }
+    // this.url = this.url.replace(/filter_column=[^&]*/, `filter_column=${this.filterColmn}`);
+    // this.url = this.url.replace(/filter_value=[^&]*/, `filter_value=${ this.filterText}`);
+    this.getTableData(this.url, this.body);
   }
 
   getFilterOptions(key: string) {
-    return [{label:'Lable 1', value:'label1'}, {label:'Lable 1', value:'label1'}];
+    return [{ label: 'Lable 1', value: 'label1' }, { label: 'Lable 1', value: 'label1' }];
   }
 
-  isSearchable(columnKey : string){
-    const column = this.columns.find(col => col.key === columnKey);
-    return column?.searchable
+  isSearchable(columnKey: any) {
+    const column = this.columns.find((col: any) => col.key === columnKey);
+    return column?.search
   }
-  isFilterable(columnKey : string){
-    const column = this.columns.find(col => col.key === columnKey);
-    return column?.filterable
+  isFilterable(columnKey: any) {
+    const column = this.columns.find((col: any) => col.key === columnKey);
+    this.options = column.filters = this.filteredObjects[column.key];
+    return column?.filter
+  }
+
+  getFilteredColumns(filters: any, columns: any[]): any {
+    const filteredData : any=  {};
+    columns.forEach((column) => {
+      if (column.filter) {
+        const filterKey = column.key;
+        if (filters[filterKey]) {
+          filteredData[filterKey] = filters[filterKey];
+        }
+      }
+    });
+    return filteredData;
+  }
+
+  openPopup() {
+    this.showPopup = true;
+  }
+
+  closePopup() {
+    this.showPopup = false;
+  }
+
+  validateDates() {
+    if (this.startDate && this.endDate) {
+      this.dateError = this.endDate < this.startDate;
+    } else {
+      this.dateError = false;
+    }
+  }
+
+  submitDates() {
+    if (!this.dateError) {
+      const startDateEpoch = this.startDate.getTime() / 1000;
+      const endDateEpoch = this.endDate.getTime() / 1000;
+      this.downloadCSV(startDateEpoch,endDateEpoch);
+    }
+  }
+  downloadCSV(startDate :any, endDate:any){
+    this.url =  this.url.replace(/start_date=[^&]*/, `start_date=${startDate}`);
+    this.url =  this.url.replace(/end_date=[^&]*/, `end_date=${endDate}`);
+    this.url =  this.url.replace(/download_csv=[^&]*/, `download_csv=true`);
+    this.apiService.post({url :  this.url, headers: this.headers}).then((data:any)=>{  
+      if(data.result && data.result.reportsDownloadUrl){
+        this.noData = false;
+
+        const link = document.createElement('a');
+        link.href = data.result.reportsDownloadUrl;
+        const timestamp: number = new Date().getTime();
+        link.download = `${this.title}${timestamp}.csv`; 
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        this.closePopup();
+      }else{
+        this.noData = true;
+      }
+    })
+  }
+  formatDate(date: Date | null): string {
+    return date ? this.datePipe.transform(date, 'dd/MM/yyyy') || '' : '';
+  }
+  onPageChange(event: { pageIndex: number; }){
+    this.page = event.pageIndex + 1;
+    this.pageSize = this.paginator.pageSize;
+    this.getTableData(this.url, this.body);
   }
 }

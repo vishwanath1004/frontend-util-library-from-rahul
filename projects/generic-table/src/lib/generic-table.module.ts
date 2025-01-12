@@ -9,12 +9,12 @@ import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatInputModule } from '@angular/material/input';
 import { CommonModule } from '@angular/common';
-
-
-
-
-
-
+import {MatIconModule} from '@angular/material/icon';
+import {MatButtonModule} from '@angular/material/button';
+import {MatDatepickerModule} from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
+import { FormsModule } from '@angular/forms';
+import { DatePipe } from '@angular/common';
 @NgModule({
   declarations: [
     GenericTableComponent,
@@ -28,12 +28,18 @@ import { CommonModule } from '@angular/common';
     MatSelectModule,
     MatFormFieldModule,
     MatInputModule,
-    MatOptionModule
+    MatOptionModule,
+    MatIconModule,
+    MatButtonModule,
+    MatDatepickerModule,
+    MatNativeDateModule,
+    FormsModule
   ],
   schemas:[NO_ERRORS_SCHEMA],
   exports: [
     GenericTableComponent,
     TableComponent
-  ]
+  ],
+  providers:[DatePipe]
 })
 export class GenericTableModule { }
