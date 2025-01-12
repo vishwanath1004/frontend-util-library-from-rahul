@@ -3,11 +3,10 @@ import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
 import { GenericTableService } from '../../generic-table.service';
-import { MatDialog } from '@angular/material/dialog';
-import * as moment from 'moment';
 import { DatePipe } from '@angular/common';
 import { Subject } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
+import { paginatorConstants } from '../../constants/paginatorConstats';
 
 @Component({
   selector: 'lib-table',
@@ -16,6 +15,8 @@ import { debounceTime } from 'rxjs/operators';
 })
 export class TableComponent implements OnInit, AfterViewInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
+  pageSize = paginatorConstants.defaultPageSize;
+  pageSizeOptions = paginatorConstants.pageSizeOptions;
   @ViewChild(MatSort) sort!: MatSort;
   @Input() url: any;
   @Input() headers: any;
@@ -23,6 +24,7 @@ export class TableComponent implements OnInit, AfterViewInit {
   @Input() legends: any;
   @Input() showDownload: boolean = true;
   @Input() title: any = true;
+  body: any = {};
   dataSource = new MatTableDataSource<any>();
   displayedColumns: string[] = [];
   sortType ="ASC";
@@ -35,23 +37,36 @@ export class TableComponent implements OnInit, AfterViewInit {
   searchText :any =[]
   filterColmn :any =[]
   filterText :any =[]
-  options = [{ label: 'Lable 1', value: 'label1' }, { label: 'Lable 1', value: 'label1' }];
+  options:any = [];
   showPopup = false;
   startDate: any;
   endDate: any;
   dateError = false;
 
   private searchSubject = new Subject<{ event: any, key: any }>();
+  page: any = 1;
+  tableDataCount: any;
+  filters: any;
+  filteredObjects: any;
 
-  constructor(private apiService: GenericTableService, private dialog: MatDialog,
+  constructor(private apiService: GenericTableService,
     private datePipe: DatePipe
   ) { }
 
   ngOnInit(): void {
-    console.log("getTableData == ngOnInit");
     setTimeout(() => {
-      this.url +=`&search_column=${this.searchColmn}&search_value=${this.searchText}&sort_column=${this.sortColumn}&sort_type=${this.sortType}&filter_column=${this.filterColmn}&filter_value=${this.filterText}&download_csv=${this.isDownload}`;
-      this.getTableData(this.url);
+      this.url +=`&sort_column=${this.sortColumn}&sort_type=${this.sortType}&download_csv=${this.isDownload}&pageNo=${this.page}&Limit=${this.pageSize}`;
+      // this.body = {
+      //   "filters":{
+      //     "sessions_created_by": this.filterColmn,
+      //     "filter_value": this.filterText
+      //   },
+      //   "search": {
+      //     "search_column": this.searchColmn,
+      //     "search_value": this.searchText
+      //   }
+      // }
+      this.getTableData(this.url, this.body);
     }, 100);
 
     this.searchSubject.pipe(
@@ -61,22 +76,46 @@ export class TableComponent implements OnInit, AfterViewInit {
     });
   }
 
-  getTableData(apiUrl:any) {
-    const paylaod = { url: apiUrl, headers: this.headers }
-    this.apiService.get(paylaod).then((data: any) => {
+  getTableData(apiUrl:any, apiBody: any) {
+    const paylaod = { url: apiUrl, headers: this.headers, body: apiBody }
+    this.apiService.post(paylaod).then((data: any) => {
       if (data.result?.data) {
         this.isDownload = false;
         this.columns = data.result.config ? data.result.config.columns :[];
         this.data = data.result.data ? data.result.data : []; 
+        this.tableDataCount = data.result.data.length ? data.result.data.length : "";
+        this.filters = data.result.filters ? data.result.filters: {};
         this.initializeTable();
+        //// remove after sumans fix
+        this.transformData();
+        /////
+        this.filteredObjects = this.getFilteredColumns(this.filters, this.columns);
       }
     })
   }
 
+  //// remove after sumans fix
+  transformData(): void {
+    for (const key in this.filters) {
+      if (
+        Array.isArray(this.filters[key]) &&
+        this.filters[key].every((item: string | number | boolean) => typeof item !== 'object')
+      ) {
+        this.filters[key] = this.filters[key].map((item: string | number | boolean) => ({
+          label: item,
+          value: item
+        }));
+      }
+    }
+  }
+  
+
+  ///////
+
   onSort(data: any) {
     this.sortColumn = data;
     this.sortType = this.sortType === "ASC" ? "DESC" : "ASC";
-    this.getTableData(this.url);
+    this.getTableData(this.url, this.body);
   }
   ngAfterViewInit(): void {
     this.dataSource.paginator = this.paginator;
@@ -112,9 +151,9 @@ export class TableComponent implements OnInit, AfterViewInit {
         this.searchText.splice(index, 1); 
       }
     }
-    this.url = this.url.replace(/search_column=[^&]*/, `search_column=${this.searchColmn}`);
-    this.url = this.url.replace(/search_value=[^&]*/, `search_value=${ this.searchText}`);
-    this.getTableData(this.url);
+    // this.url = this.url.replace(/search_column=[^&]*/, `search_column=${this.searchColmn}`);
+    // this.url = this.url.replace(/search_value=[^&]*/, `search_value=${ this.searchText}`);
+    this.getTableData(this.url, this.body);
   }
 
   onFilter(event: any, key: string) {
@@ -133,9 +172,9 @@ export class TableComponent implements OnInit, AfterViewInit {
         this.filterText.splice(index, 1); 
       }
     }
-    this.url = this.url.replace(/filter_column=[^&]*/, `filter_column=${this.filterColmn}`);
-    this.url = this.url.replace(/filter_value=[^&]*/, `filter_value=${ this.filterText}`);
-    this.getTableData(this.url);
+    // this.url = this.url.replace(/filter_column=[^&]*/, `filter_column=${this.filterColmn}`);
+    // this.url = this.url.replace(/filter_value=[^&]*/, `filter_value=${ this.filterText}`);
+    this.getTableData(this.url, this.body);
   }
 
   getFilterOptions(key: string) {
@@ -148,11 +187,24 @@ export class TableComponent implements OnInit, AfterViewInit {
   }
   isFilterable(columnKey: any) {
     const column = this.columns.find((col: any) => col.key === columnKey);
+    this.options = column.filters = this.filteredObjects[column.key];
     return column?.filter
   }
 
+  getFilteredColumns(filters: any, columns: any[]): any {
+    const filteredData : any=  {};
+    columns.forEach((column) => {
+      if (column.filter) {
+        const filterKey = column.key;
+        if (filters[filterKey]) {
+          filteredData[filterKey] = filters[filterKey];
+        }
+      }
+    });
+    return filteredData;
+  }
+
   openPopup() {
-    console.log("openPopup");
     this.showPopup = true;
   }
 
@@ -179,7 +231,7 @@ export class TableComponent implements OnInit, AfterViewInit {
     this.url =  this.url.replace(/start_date=[^&]*/, `start_date=${startDate}`);
     this.url =  this.url.replace(/end_date=[^&]*/, `end_date=${endDate}`);
     this.url =  this.url.replace(/download_csv=[^&]*/, `download_csv=true`);
-    this.apiService.get({url :  this.url, headers: this.headers}).then((data:any)=>{  
+    this.apiService.post({url :  this.url, headers: this.headers}).then((data:any)=>{  
       if(data.result && data.result.reportsDownloadUrl){
         this.noData = false;
 
@@ -198,5 +250,10 @@ export class TableComponent implements OnInit, AfterViewInit {
   }
   formatDate(date: Date | null): string {
     return date ? this.datePipe.transform(date, 'dd/MM/yyyy') || '' : '';
+  }
+  onPageChange(event: { pageIndex: number; }){
+    this.page = event.pageIndex + 1;
+    this.pageSize = this.paginator.pageSize;
+    this.getTableData(this.url, this.body);
   }
 }

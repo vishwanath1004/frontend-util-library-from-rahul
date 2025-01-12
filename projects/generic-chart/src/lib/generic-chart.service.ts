@@ -25,6 +25,22 @@ export class GenericChartService {
       });
   }
 
+  async post(requestParam: any) {
+    const headers = requestParam.headers ? new HttpHeaders(requestParam.headers) : new HttpHeaders();
+    const options = {
+      headers: headers
+    };
+    return this.http.post(requestParam.url,{}, options).toPromise()
+      .then((data: any) => {
+        let result: any = data;
+        if (result.responseCode === "OK") {
+          return result.result.data;
+        } else {
+          return data;
+        }
+      });
+  }
+
   transformApiResponse(response: any[], legends: any): any {
     const labels: string[] = [];
     let dataset: any = [];

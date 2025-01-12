@@ -24,7 +24,7 @@ data : any
     let headers = this.headers;
       setTimeout(() => {
         this.getChartData();
-        this.initializeChart();
+        // this.initializeChart();
       }, 100);
           window.addEventListener('resize', this.onResize.bind(this));
         }
@@ -42,7 +42,7 @@ data : any
 
   async getChartData(){
     const paylaod  ={url : this.url, headers : this.headers}
-    this.apiService.get(paylaod).then(async (data: any) => {
+    this.apiService.post(paylaod).then(async (data: any) => {
      this.data = await this.apiService.transformApiResponse(data,this.legends[this.sessionType] );
       this.initializeChart();
     })
@@ -54,6 +54,15 @@ data : any
       this.chart.destroy();
       this.chart = undefined;
     }
+    const hasData = this.data ? this.checkIfAnyDataExists(this.data?.datasets): true;
+    if (!hasData) {
+      const containerElement = document.getElementById('chartContainer');
+      if (containerElement) {
+        containerElement.innerHTML = '<div style="color: #832215; background-color: #f8f9fa; text-align: center; font-size: 16px; padding: 20px 0; width: 100%;">No sessions</div>';
+      }
+      return;
+    }
+  
     if (chartElement) {
       this.chart = new Chart(chartElement, {
         type: 'bar',
@@ -107,6 +116,10 @@ data : any
   }
   ngOnDestroy() {
     window.removeEventListener('resize', this.onResize.bind(this));
+  }
+
+  checkIfAnyDataExists(datasets: { label: string; data: number[] }[]): boolean {
+    return datasets.some(dataset => dataset?.data.some(value => value > 0));
   }
 
 }
