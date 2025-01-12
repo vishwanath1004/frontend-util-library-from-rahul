@@ -24,6 +24,9 @@ export class TableComponent implements OnInit, AfterViewInit {
   @Input() legends: any;
   @Input() showDownload: boolean = true;
   @Input() title: any = true;
+  filters: { [key: string]: string[] } = {};
+  searches: { [key: string]: string[] } = {};
+
   body: any = {};
   dataSource = new MatTableDataSource<any>();
   displayedColumns: string[] = [];
@@ -46,7 +49,6 @@ export class TableComponent implements OnInit, AfterViewInit {
   private searchSubject = new Subject<{ event: any, key: any }>();
   page: any = 1;
   tableDataCount: any;
-  filters: any;
   filteredObjects: any;
 
   constructor(private apiService: GenericTableService,
@@ -56,16 +58,6 @@ export class TableComponent implements OnInit, AfterViewInit {
   ngOnInit(): void {
     setTimeout(() => {
       this.url +=`&sort_column=${this.sortColumn}&sort_type=${this.sortType}&download_csv=${this.isDownload}&pageNo=${this.page}&Limit=${this.pageSize}`;
-      // this.body = {
-      //   "filters":{
-      //     "sessions_created_by": this.filterColmn,
-      //     "filter_value": this.filterText
-      //   },
-      //   "search": {
-      //     "search_column": this.searchColmn,
-      //     "search_value": this.searchText
-      //   }
-      // }
       this.getTableData(this.url, this.body);
     }, 100);
 
@@ -84,9 +76,10 @@ export class TableComponent implements OnInit, AfterViewInit {
         this.columns = data.result.config ? data.result.config.columns :[];
         this.data = data.result.data ? data.result.data : []; 
         this.tableDataCount = data.result.data.length ? data.result.data.length : "";
-        this.filters = data.result.filters ? data.result.filters: {};
+        if(data.result.filters){
+          this.filteredObjects = data.result.filters;
+        }
         this.initializeTable();
-        this.filteredObjects = this.getFilteredColumns(this.filters, this.columns);
       }
     })
   }
@@ -94,6 +87,8 @@ export class TableComponent implements OnInit, AfterViewInit {
   onSort(data: any) {
     this.sortColumn = data;
     this.sortType = this.sortType === "ASC" ? "DESC" : "ASC";
+    this.url =  this.url.replace(/sort_type=[^&]*/, `sort_type=${this.sortType}`);
+    this.url =  this.url.replace(/sort_column=[^&]*/, `sort_column=${ this.sortColumn}`);
     this.getTableData(this.url, this.body);
   }
   ngAfterViewInit(): void {
@@ -106,83 +101,72 @@ export class TableComponent implements OnInit, AfterViewInit {
       this.displayedColumns = Object.keys(this.data[0]);
     }
   }
-
   getHeaderLabel(columnKey: string): string {
     const column = this.columns.find((col: any) => col.key === columnKey);
     return column ? column.label : columnKey;
   }
-
-  filteredData = [...this.data];
-
   onSearch(event: any, key: any) {
     this.searchSubject.next({ event, key });
   }
 
   performSearch(event: any, key: any) {
-    if (event.target.value && !this.searchColmn.includes(key)) {
-      this.searchColmn.push(key);
-      this.searchText.push(event.target.value);
+    const value = event.target.value;
+    if (value.length) {
+      this.searches[key] = [value];
+    } else {
+      delete this.searches[key];
     }
-    if (!event.target.value) {
-      const index = this.searchColmn.indexOf(key);
-      if (index > -1) {
-        this.searchColmn.splice(index, 1); 
-        this.searchText.splice(index, 1); 
-      }
-    }
-    // this.url = this.url.replace(/search_column=[^&]*/, `search_column=${this.searchColmn}`);
-    // this.url = this.url.replace(/search_value=[^&]*/, `search_value=${ this.searchText}`);
+    this.body = { filters: this.filters, search: this.searches };
     this.getTableData(this.url, this.body);
   }
-
   onFilter(event: any, key: string) {
-    const value = event.value;
-    if (value.length && !this.filterColmn.includes(key)) {
-      this.filterColmn.push(key);
-      this.filterText.push(value);
-    }else 
-    if(value.length && this.filterColmn.includes(key)){
-      this.filterText.push(value);
-    }else 
-    if (!value?.length) {
-      const index = this.filterColmn.indexOf(key);
-      if (index > -1) {
-        this.filterColmn.splice(index, 1); 
-        this.filterText.splice(index, 1); 
-      }
+    let value = event.value;
+  
+    if (!Array.isArray(value)) {
+      value = [value];
     }
-    // this.url = this.url.replace(/filter_column=[^&]*/, `filter_column=${this.filterColmn}`);
-    // this.url = this.url.replace(/filter_value=[^&]*/, `filter_value=${ this.filterText}`);
+    if (value && value.length) {
+      this.filters[key] = value;
+    } else {
+      delete this.filters[key];
+    }
+    this.body = { filters: this.filters, search: this.searches };
     this.getTableData(this.url, this.body);
   }
 
-  getFilterOptions(key: string) {
-    return [{ label: 'Lable 1', value: 'label1' }, { label: 'Lable 1', value: 'label1' }];
+  onDate(event: any, key: string) {
+    const selectedDate = event && event.target.value;
+    if (selectedDate) {
+      const formattedDate = selectedDate.getFullYear() + '-' +
+      String(selectedDate.getMonth() + 1).padStart(2, '0') + '-' +
+      String(selectedDate.getDate()).padStart(2, '0');
+      this.filters[key] = [formattedDate]; 
+    } else {
+      delete this.filters[key];
+    }
+    this.body = { filters: this.filters, search: this.searches };
+    this.getTableData(this.url, this.body);
   }
-
   isSearchable(columnKey: any) {
     const column = this.columns.find((col: any) => col.key === columnKey);
     return column?.search
   }
   isFilterable(columnKey: any) {
     const column = this.columns.find((col: any) => col.key === columnKey);
-    this.options = column.filters = this.filteredObjects[column.key];
+    if(column.dataType !== "Date"){
+      this.options = column.filters = this.filteredObjects[column.key];
+      return column?.filter
+    }
+  }
+  checkMultiple(columnKey: any) {
+    const column = this.columns.find((col: any) => col.key === columnKey);
+      return column?.isMultipleFilter
+  }
+
+  isDatePicker(columnKey: any) {
+    const column = this.columns.find((col: any) => col.key === columnKey && col.dataType === 'Date');
     return column?.filter
   }
-
-  getFilteredColumns(filters: any, columns: any[]): any {
-    const filteredData : any=  {};
-    columns.forEach((column) => {
-      if (column.filter) {
-        const filterKey = column.key;
-        if (filters[filterKey]) {
-          filteredData[filterKey] = filters[filterKey];
-        }
-      }
-    });
-    return filteredData;
-  }
-
   openPopup() {
     this.showPopup = true;
   }
@@ -210,7 +194,7 @@ export class TableComponent implements OnInit, AfterViewInit {
     this.url =  this.url.replace(/start_date=[^&]*/, `start_date=${startDate}`);
     this.url =  this.url.replace(/end_date=[^&]*/, `end_date=${endDate}`);
     this.url =  this.url.replace(/download_csv=[^&]*/, `download_csv=true`);
-    this.apiService.post({url :  this.url, headers: this.headers}).then((data:any)=>{  
+    this.apiService.post({url :  this.url,body:this.body, headers: this.headers}).then((data:any)=>{  
       if(data.result && data.result.reportsDownloadUrl){
         this.noData = false;
 
@@ -235,4 +219,11 @@ export class TableComponent implements OnInit, AfterViewInit {
     this.pageSize = this.paginator.pageSize;
     this.getTableData(this.url, this.body);
   }
+
+  hasFiltersData(): boolean {
+    const hasFilterKeys = Object.keys(this.filters).length > 0;
+    const hasSearchValue = Object.keys(this.searches).length > 0;
+    return hasFilterKeys || hasSearchValue;
+  }
+
 }

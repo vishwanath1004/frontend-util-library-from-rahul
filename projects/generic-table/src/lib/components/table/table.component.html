@@ -1,7 +1,7 @@
-<div *ngIf="!dataSource?.data?.length && !searchColmn?.length"  class="no-data-row">
+<div *ngIf="!dataSource?.data?.length && (!hasFiltersData())"  class="no-data-row">
   <h1>No sessions</h1>
 </div>
-<div class="mat-elevation-z8"  *ngIf="dataSource?.data?.length || searchColmn?.length" >
+<div class="mat-elevation-z8"  *ngIf="dataSource?.data?.length || hasFiltersData()" >
   <div class="table-container">
     <div class="header">
       <div class="title">{{title}}</div>
@@ -17,24 +17,35 @@
             <div class="header-label">{{ getHeaderLabel(column) }}  <mat-icon class="material-symbols-outlined" style="cursor: pointer;" (click)="onSort(column)">
               swap_vert
             </mat-icon></div>
-            <div class="custom-input-box" *ngIf="isSearchable(column)">
-              <span class="search-icon">
-                <mat-icon>search</mat-icon>
-              </span>
-              <input 
-                type="text" 
-                class="search-input" 
-                placeholder="Search" 
-                (click)="$event.stopPropagation()" 
-                (input)="onSearch($event, column)" 
-                #searchbar />
-            </div>
-            <mat-form-field appearance="outline" *ngIf="isFilterable(column)" style="border-radius: 8px; ">
-              <mat-select (selectionChange)="onFilter($event, column)" multiple placeholder="Select" style="padding: unset !important;">
+            <mat-form-field appearance="outline"  *ngIf="isSearchable(column)">
+              <mat-label>Search</mat-label>
+              <input
+                matInput
+                type="text"
+                placeholder="Search"
+                (click)="$event.stopPropagation()"
+                (input)="onSearch($event, column)"
+                #searchbar
+              />
+              <mat-icon matPrefix>search</mat-icon>
+            </mat-form-field>
+            <mat-form-field appearance="outline" *ngIf="isFilterable(column)">
+              <mat-select (selectionChange)="onFilter($event, column)" [multiple]="checkMultiple(column)" placeholder="Select" style="padding: unset !important;">
                 <mat-option *ngFor="let option of options" [value]="option.value">
                   {{ option.label }}
                 </mat-option>
               </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline" *ngIf="isDatePicker(column)">
+              <mat-label>Select date</mat-label>
+              <input
+                matInput
+                [matDatepicker]="startPicker"
+                (dateChange)="onDate($event, column)"
+                placeholder="Choose a date"
+              />
+              <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+              <mat-datepicker #startPicker></mat-datepicker>
             </mat-form-field>
           </div>
         </th>
@@ -63,14 +74,14 @@
   <div class="overlay" *ngIf="showPopup"></div>
   <mat-dialog-content *ngIf="showPopup" class="centered-popup">
     <h2>Select Date Range</h2>
-    <mat-form-field appearance="fill">
+    <mat-form-field appearance="outline">
       <mat-label>Start Date</mat-label>
       <input matInput [matDatepicker]="startPicker" [(ngModel)]="startDate" (ngModelChange)="validateDates(); formatDate(startDate)"
       >
       <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
       <mat-datepicker #startPicker></mat-datepicker>
     </mat-form-field>
-    <mat-form-field appearance="fill">
+    <mat-form-field  appearance="outline">
       <mat-label>End Date</mat-label>
       <input matInput [matDatepicker]="endPicker" [(ngModel)]="endDate" (ngModelChange)="validateDates(); formatDate(endDate)">
       <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
