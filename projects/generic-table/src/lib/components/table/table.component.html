@@ -9,7 +9,7 @@
         <button mat-raised-button color="primary" (click)="openPopup()" style="background-color: #832215; color: #fff;" >Download Table</button>
       </div>
     </div>
-   <div style="overflow: auto;">
+   <div style="overflow: auto; max-height: 301px;">
     <table mat-table [dataSource]="dataSource" class="full-width-table">
       <ng-container *ngFor="let column of displayedColumns; let i = index" [matColumnDef]="column">
         <th mat-header-cell *matHeaderCellDef style="border-bottom: 1px solid #ccc;">

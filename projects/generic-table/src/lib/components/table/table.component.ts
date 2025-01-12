@@ -86,31 +86,10 @@ export class TableComponent implements OnInit, AfterViewInit {
         this.tableDataCount = data.result.data.length ? data.result.data.length : "";
         this.filters = data.result.filters ? data.result.filters: {};
         this.initializeTable();
-        //// remove after sumans fix
-        this.transformData();
-        /////
         this.filteredObjects = this.getFilteredColumns(this.filters, this.columns);
       }
     })
   }
-
-  //// remove after sumans fix
-  transformData(): void {
-    for (const key in this.filters) {
-      if (
-        Array.isArray(this.filters[key]) &&
-        this.filters[key].every((item: string | number | boolean) => typeof item !== 'object')
-      ) {
-        this.filters[key] = this.filters[key].map((item: string | number | boolean) => ({
-          label: item,
-          value: item
-        }));
-      }
-    }
-  }
-  
-
-  ///////
 
   onSort(data: any) {
     this.sortColumn = data;
