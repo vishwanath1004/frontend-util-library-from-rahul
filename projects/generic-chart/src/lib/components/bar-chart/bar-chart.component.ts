@@ -10,7 +10,6 @@ import { GenericChartService } from '../../generic-chart.service';
 export class BarChartComponent implements OnInit {
   @Input() url: any;
   @Input() headers: any;
-  @Input() labels: any
   @Input() legends :any;
   @Input() sessionType :any;
 data : any
@@ -43,7 +42,7 @@ data : any
   async getChartData(){
     const paylaod  ={url : this.url, headers : this.headers}
     this.apiService.post(paylaod).then(async (data: any) => {
-     this.data = await this.apiService.transformApiResponse(data,this.legends[this.sessionType] );
+     this.data = await this.apiService.transformApiResponse(data,this.legends );
       this.initializeChart();
     })
   }
@@ -58,7 +57,7 @@ data : any
     if (!hasData) {
       const containerElement = document.getElementById('chartContainer');
       if (containerElement) {
-        containerElement.innerHTML = '<div style="color: #832215; background-color: #f8f9fa; text-align: center; font-size: 16px; padding: 20px 0; width: 100%;">No sessions</div>';
+        containerElement.innerHTML = '<h1 style="color: #832215; background-color: #f8f9fa; text-align: center; padding: 20px 0; width: 100%;">No sessions</h1>';
       }
       return;
     }
