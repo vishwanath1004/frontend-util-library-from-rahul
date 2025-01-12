@@ -75,7 +75,7 @@ export class TableComponent implements OnInit, AfterViewInit {
         this.isDownload = false;
         this.columns = data.result.config ? data.result.config.columns :[];
         this.data = data.result.data ? data.result.data : []; 
-        this.tableDataCount = data.result.data.length ? data.result.data.length : "";
+        this.tableDataCount = data.result.count ? data.result.count : "";
         if(data.result.filters){
           this.filteredObjects = data.result.filters;
         }
@@ -92,8 +92,8 @@ export class TableComponent implements OnInit, AfterViewInit {
     this.getTableData(this.url, this.body);
   }
   ngAfterViewInit(): void {
-    this.dataSource.paginator = this.paginator;
-    this.dataSource.sort = this.sort;
+    // this.dataSource.paginator = this.paginator;
+    // this.dataSource.sort = this.sort;
   }
   initializeTable(): void {
     this.dataSource.data = this.data;
@@ -217,6 +217,9 @@ export class TableComponent implements OnInit, AfterViewInit {
   onPageChange(event: { pageIndex: number; }){
     this.page = event.pageIndex + 1;
     this.pageSize = this.paginator.pageSize;
+    this.url = this.url
+      .replace(/pageNo=\d+/, `pageNo=${this.page}`)
+      .replace(/Limit=\d+/, `Limit=${this.pageSize}`);
     this.getTableData(this.url, this.body);
   }
 
