@@ -89,7 +89,7 @@ export class TableComponent implements OnInit, AfterViewInit {
     this.sortType = this.sortType === "ASC" ? "DESC" : "ASC";
     this.url =  this.url.replace(/sort_type=[^&]*/, `sort_type=${this.sortType}`);
     this.url =  this.url.replace(/sort_column=[^&]*/, `sort_column=${ this.sortColumn}`);
-    this.page = 1;
+    this.paginator.firstPage()
     this.url = this.url
       .replace(/pageNo=\d+/, `pageNo=${this.page}`);
     this.getTableData(this.url, this.body);
@@ -119,7 +119,7 @@ export class TableComponent implements OnInit, AfterViewInit {
     } else {
       delete this.searches[key];
     }
-    this.page = 1;
+    this.paginator.firstPage()
     this.url = this.url
       .replace(/pageNo=\d+/, `pageNo=${this.page}`);
     this.body = { filters: this.filters, search: this.searches };
@@ -136,7 +136,7 @@ export class TableComponent implements OnInit, AfterViewInit {
     } else {
       delete this.filters[key];
     }
-    this.page = 1;
+    this.paginator.firstPage()
     this.url = this.url
       .replace(/pageNo=\d+/, `pageNo=${this.page}`);
     this.body = { filters: this.filters, search: this.searches };
@@ -153,7 +153,7 @@ export class TableComponent implements OnInit, AfterViewInit {
     } else {
       delete this.filters[key];
     }
-    this.page = 1;
+    this.paginator.firstPage()
     this.url = this.url
       .replace(/pageNo=\d+/, `pageNo=${this.page}`);
     this.body = { filters: this.filters, search: this.searches };
