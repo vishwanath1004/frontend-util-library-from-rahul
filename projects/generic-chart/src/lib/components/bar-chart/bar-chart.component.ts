@@ -72,7 +72,7 @@ data : any
             legend: {
               display: true,
               position: 'top',
-            align:"end",
+              align:"end",
               labels: {
                 boxWidth: 15,
                 boxHeight: 15, 
