@@ -29,6 +29,7 @@
               />
               <mat-icon matPrefix>search</mat-icon>
             </mat-form-field>
+            <mat-error *ngIf="activeSearchColumn === column && !isValidSearch">Invalid search text</mat-error>
             <mat-form-field appearance="outline" *ngIf="isFilterable(column)">
               <mat-select (selectionChange)="onFilter($event, column)" [multiple]="checkMultiple(column)" placeholder="Select" style="padding: unset !important;">
                 <mat-option *ngFor="let option of options" [value]="option.value">

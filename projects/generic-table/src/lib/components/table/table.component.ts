@@ -50,6 +50,8 @@ export class TableComponent implements OnInit, AfterViewInit {
   page: any = 1;
   tableDataCount: any;
   filteredObjects: any;
+  isValidSearch: any= false;
+  activeSearchColumn: string | null = null;
 
   constructor(private apiService: GenericTableService,
     private datePipe: DatePipe
@@ -109,7 +111,18 @@ export class TableComponent implements OnInit, AfterViewInit {
     return column ? column.label : columnKey;
   }
   onSearch(event: any, key: any) {
-    this.searchSubject.next({ event, key });
+    // this.searchSubject.next({ event, key });
+    const value = event.target.value;
+    const regex = /^[a-zA-Z0-9]*$/;
+
+    this.activeSearchColumn = key; 
+
+    if (regex.test(value)) {
+      this.isValidSearch = true;
+      this.searchSubject.next({ event, key });
+    } else {
+      this.isValidSearch = false;
+    }
   }
 
   performSearch(event: any, key: any) {
