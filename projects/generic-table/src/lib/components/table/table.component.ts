@@ -26,6 +26,9 @@ export class TableComponent implements OnInit, AfterViewInit {
   @Input() title: any = true;
   filters: { [key: string]: string[] } = {};
   searches: { [key: string]: string[] } = {};
+  filterValues: { [key: string]: any } = {};
+  dateFilters: { [key: string]: any } = {};
+  searchValues: { [key: string]: string } = {};
 
   body: any = {};
   dataSource = new MatTableDataSource<any>();
@@ -85,6 +88,31 @@ export class TableComponent implements OnInit, AfterViewInit {
       }
     })
   }
+
+  clearFilters() {
+    Object.keys(this.searchValues).forEach((key) => {
+      this.searchValues[key] = '';
+    });
+    Object.keys(this.filterValues).forEach((key) => {
+      this.filterValues[key] = null;
+    });
+    Object.keys(this.dateFilters).forEach((key) => {
+      this.dateFilters[key] = null;
+    });
+    this.sortColumn = null;
+    this.sortType = '';
+    this.body = {};
+    this.isDownload = false;
+    this.dataSource.data = [];
+    this.paginator.firstPage();
+
+    this.url = this.url
+        .replace(/(pageNo=\d+)/, `pageNo=${this.page}`)
+        .replace(/(Limit=\d+)/, `&Limit=${this.pageSize}`);
+
+    this.getTableData(this.url, this.body);
+}
+
 
   onSort(data: any) {
     this.sortColumn = data;
