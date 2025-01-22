@@ -6,7 +6,8 @@
     <div class="header">
       <div class="title">{{title}}</div>
       <div>
-        <button mat-raised-button color="primary" (click)="openPopup()" style="background-color: #832215; color: #fff;" >Download Table</button>
+        <button mat-raised-button color="primary" *ngIf="hasFiltersData() || sortColumn" (click)="clearFilters()" style="background-color: #832215; color: #fff; margin: 2px;" >Clear Filters</button>
+        <button mat-raised-button color="primary" (click)="openPopup()" style="background-color: #832215; color: #fff; margin: 2px;" >Download Table</button>
       </div>
     </div>
    <div style="overflow: auto; max-height: 301px;">
@@ -25,12 +26,13 @@
                 placeholder="Search"
                 (click)="$event.stopPropagation()"
                 (input)="onSearch($event, column)"
-                #searchbar
+                [(ngModel)]="searchValues[column]"
               />
               <mat-icon matPrefix>search</mat-icon>
             </mat-form-field>
+            <mat-error *ngIf="activeSearchColumn === column && !isValidSearch">Invalid search text</mat-error>
             <mat-form-field appearance="outline" *ngIf="isFilterable(column)">
-              <mat-select (selectionChange)="onFilter($event, column)" [multiple]="checkMultiple(column)" placeholder="Select" style="padding: unset !important;">
+              <mat-select [(ngModel)]="filterValues[column]" (selectionChange)="onFilter($event, column)" [multiple]="checkMultiple(column)" placeholder="Select" style="padding: unset !important;">
                 <mat-option *ngFor="let option of options" [value]="option.value">
                   {{ option.label }}
                 </mat-option>
@@ -43,6 +45,7 @@
                 [matDatepicker]="startPicker"
                 (dateChange)="onDate($event, column)"
                 placeholder="Choose a date"
+                [(ngModel)]="dateFilters[column]"
               />
               <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
               <mat-datepicker #startPicker></mat-datepicker>
