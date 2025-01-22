@@ -30,7 +30,7 @@ export class GenericChartService {
     const options = {
       headers: headers
     };
-    return this.http.post(requestParam.url,{}, options).toPromise()
+    return this.http.post(requestParam.url,requestParam?.entityType, options).toPromise()
       .then((data: any) => {
         let result: any = data;
         if (result.responseCode === "OK") {
@@ -62,18 +62,20 @@ export class GenericChartService {
         let existingDataset = dataset.find((ds:any) => ds.label === label);
         if (item[key] && !isNaN(item[key])) {
           const value = Number(item[key]);
-          if (existingDataset) {
-            existingDataset.data.push(value);
-          } else {
-            dataset.push({
-              label: label,
-              data: [value],
-              barThickness: 16,
-              barPercentage: 0.5,
-              backgroundColor: legend.backgroundColor || this.getRandomColor(),
-            });
-          }
+          if (value !== 0) {
+            if (existingDataset) {
+              existingDataset?.data.push(value);
+            } else {
+              dataset.push({
+                label: label,
+                data: [value],
+                barThickness: 30,
+                barPercentage: 1,
+                backgroundColor: legend.backgroundColor || this.getRandomColor(),
+              });
+            }
         }
+      }
       }
     });
     return {
