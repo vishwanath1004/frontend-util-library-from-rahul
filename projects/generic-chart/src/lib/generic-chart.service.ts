@@ -30,7 +30,7 @@ export class GenericChartService {
     const options = {
       headers: headers
     };
-    return this.http.post(requestParam.url,{}, options).toPromise()
+    return this.http.post(requestParam.url,requestParam?.entityType, options).toPromise()
       .then((data: any) => {
         let result: any = data;
         if (result.responseCode === "OK") {
