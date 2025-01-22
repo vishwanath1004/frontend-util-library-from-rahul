@@ -12,8 +12,10 @@ export class BarChartComponent implements OnInit {
   @Input() headers: any;
   @Input() legends :any;
   @Input() sessionType :any;
+  @Input() chartBody: any;
 data : any
   private chart: Chart | undefined;
+  hasData: any = false;
   constructor(private cdr: ChangeDetectorRef, private apiService : GenericChartService) { }
 
   ngOnInit(): void {
@@ -40,7 +42,7 @@ data : any
   }
 
   async getChartData(){
-    const paylaod  ={url : this.url, headers : this.headers}
+    const paylaod  ={url : this.url, headers : this.headers, entityType: this.chartBody}
     this.apiService.post(paylaod).then(async (data: any) => {
      this.data = await this.apiService.transformApiResponse(data,this.legends );
       this.initializeChart();
@@ -53,8 +55,8 @@ data : any
       this.chart.destroy();
       this.chart = undefined;
     }
-    const hasData = this.data ? this.checkIfAnyDataExists(this.data?.datasets): true;
-    if (!hasData) {
+    this.hasData = this.data ? this.checkIfAnyDataExists(this.data?.datasets): true;
+    if (!this.hasData) {
       const containerElement = document.getElementById('chartContainer');
       if (containerElement) {
         containerElement.innerHTML = '<h1 style="color: #832215; background-color: #f8f9fa; text-align: center; padding: 20px 0; width: 100%;">No sessions</h1>';
