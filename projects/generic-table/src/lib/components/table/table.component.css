@@ -35,6 +35,8 @@ td {
   font-size: 16px !important;
   display: flex;
   justify-content: space-between;
+  min-height: 58px;
+  align-items: center;
 }
 
 .header {
@@ -165,7 +167,6 @@ td:not(.sticky-column) {
   padding: 20px 0;
   width: 100%;
 }
-
 
 
 
