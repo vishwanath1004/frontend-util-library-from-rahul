@@ -238,8 +238,8 @@ export class TableComponent implements OnInit, AfterViewInit {
 
   submitDates() {
     if (!this.dateError) {
-      const startDateEpoch = this.startDate.getTime() / 1000;
-      const endDateEpoch = this.endDate.getTime() / 1000;
+      const startDateEpoch = new Date(this.startDate.setHours(0, 0, 0, 0)).getTime() / 1000;
+      const endDateEpoch = new Date(this.endDate.setHours(23, 59, 59, 0)).getTime() / 1000;
       this.downloadCSV(startDateEpoch,endDateEpoch);
     }
   }
