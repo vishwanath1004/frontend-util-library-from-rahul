@@ -43,6 +43,7 @@
               <input
                 matInput
                 [matDatepicker]="startPicker"
+                (click)="startPicker.open()"
                 (dateChange)="onDate($event, column)"
                 placeholder="Choose a date"
                 [(ngModel)]="dateFilters[column]"
