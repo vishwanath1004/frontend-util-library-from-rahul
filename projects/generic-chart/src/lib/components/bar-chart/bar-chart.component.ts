@@ -76,11 +76,11 @@ data : any
               position: 'top',
               align:"end",
               labels: {
-                boxWidth: 15,
-                boxHeight: 15, 
-                padding: 20,
+                boxWidth: 12,
+                boxHeight: 12, 
+                padding: 9,
                 font: {
-                  size: 14,
+                  size: 13,
                 },
               },
             },
