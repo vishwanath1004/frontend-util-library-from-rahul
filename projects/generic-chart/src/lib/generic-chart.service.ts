@@ -69,8 +69,8 @@ export class GenericChartService {
               dataset.push({
                 label: label,
                 data: [value],
-                barThickness: 30,
                 barPercentage: 1,
+                maxBarThickness: 50,
                 backgroundColor: legend.backgroundColor || this.getRandomColor(),
               });
             }
