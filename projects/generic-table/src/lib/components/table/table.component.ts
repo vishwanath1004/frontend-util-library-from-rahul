@@ -58,7 +58,12 @@ export class TableComponent implements OnInit, AfterViewInit {
 
   constructor(private apiService: GenericTableService,
     private datePipe: DatePipe
-  ) { }
+  ) { 
+    this.isMobile();
+   }
+   isMobile(){
+    return /iPhone|iPad|iPod|Android/i.test(window.navigator.userAgent);
+  }
 
   ngOnInit(): void {
     setTimeout(() => {
