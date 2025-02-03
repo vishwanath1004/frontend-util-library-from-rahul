@@ -70,7 +70,7 @@ export class GenericChartService {
                 label: label,
                 data: [value],
                 barPercentage: 1,
-                maxBarThickness: 50, // Set a max width for bars
+                maxBarThickness: 50,
                 backgroundColor: legend.backgroundColor || this.getRandomColor(),
               });
             }

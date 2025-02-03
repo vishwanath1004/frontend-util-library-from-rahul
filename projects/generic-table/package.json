@@ -1,6 +1,7 @@
 {
-  "name": "generic-table",
+  "name": "sl-generic-table",
   "version": "1.1.4",
+  "author" :"Vishwanath",
   "peerDependencies": {
     "@angular/common": "^13.2.0",
     "@angular/core": "^13.2.0",
