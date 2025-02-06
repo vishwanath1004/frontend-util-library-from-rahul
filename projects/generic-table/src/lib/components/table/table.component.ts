@@ -106,9 +106,11 @@ export class TableComponent implements OnInit, AfterViewInit {
     });
     this.sortColumn = null;
     this.sortType = '';
-    this.body = {};
     this.isDownload = false;
     this.dataSource.data = [];
+    this.filters = {};
+    this.searches = {};
+    this.body = {};
     this.paginator.firstPage();
 
     this.url = this.url
