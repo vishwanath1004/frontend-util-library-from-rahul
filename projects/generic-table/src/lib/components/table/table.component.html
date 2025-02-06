@@ -32,7 +32,7 @@
             </mat-form-field>
             <mat-error *ngIf="activeSearchColumn === column && !isValidSearch">Invalid search text</mat-error>
             <mat-form-field appearance="outline" *ngIf="isFilterable(column)">
-              <mat-select [(ngModel)]="filterValues[column]" (selectionChange)="onFilter($event, column)" [multiple]="checkMultiple(column)" placeholder="Select" style="padding: unset !important;">
+              <mat-select [(ngModel)]="filterValues[column]" (selectionChange)="onFilter($event, column)" [multiple]="checkMultiple(column)" placeholder="Select" style="padding: unset !important;" [compareWith]="compareWithArray">
                 <mat-option *ngFor="let option of options" [value]="option.value">
                   {{ option.label }}
                 </mat-option>

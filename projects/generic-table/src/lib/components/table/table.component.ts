@@ -286,5 +286,11 @@ export class TableComponent implements OnInit, AfterViewInit {
     const hasSearchValue = Object.keys(this.searches).length > 0;
     return hasFilterKeys || hasSearchValue;
   }
+  compareWithArray(o1: any, o2: any): boolean {
+    if (Array.isArray(o1) && Array.isArray(o2)) {
+      return JSON.stringify(o1) === JSON.stringify(o2);
+    }
+    return o1 === o2;
+  }
 
 }
