@@ -13,7 +13,7 @@
    <div style="overflow: auto; max-height: 65vh;">
     <table mat-table [dataSource]="dataSource" class="full-width-table">
       <ng-container *ngFor="let column of displayedColumns; let i = index" [matColumnDef]="column">
-        <th mat-header-cell *matHeaderCellDef style="border-bottom: 1px solid #ccc;">
+        <th class="mat-header-cell" *matHeaderCellDef style="border-bottom: 1px solid #ccc;">
           <div class="header-container">
             <div class="header-label" [ngClass]="{'isMobileHeaderLabel': isMobile()}">{{ getHeaderLabel(column) }}  <mat-icon class="material-symbols-outlined" style="cursor: pointer;" (click)="onSort(column)">
               swap_vert
