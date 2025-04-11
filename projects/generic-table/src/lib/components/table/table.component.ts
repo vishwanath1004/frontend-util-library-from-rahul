@@ -29,6 +29,7 @@ export class TableComponent implements OnInit, AfterViewInit {
   filterValues: { [key: string]: any } = {};
   dateFilters: { [key: string]: any } = {};
   searchValues: { [key: string]: string } = {};
+  @Input() metaKeys:any;
 
   body: any = {};
   dataSource = new MatTableDataSource<any>();

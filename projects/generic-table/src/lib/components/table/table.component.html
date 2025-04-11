@@ -1,13 +1,13 @@
 <div *ngIf="!dataSource?.data?.length && (!hasFiltersData())"  class="no-data-row">
-  <h1>No sessions</h1>
+  <h1>{{metaKeys?.noSessions}}</h1>
 </div>
 <div class="mat-elevation-z8"  *ngIf="dataSource?.data?.length || hasFiltersData()" >
   <div class="table-container" [ngClass]="{'isMobileTableContainer': isMobile()}">
     <div class="header">
       <div class="title" [ngClass]="{'isMobileTitle': isMobile()}">{{title}}</div>
       <div>
-        <button mat-raised-button color="primary" *ngIf="hasFiltersData() || sortColumn" (click)="clearFilters()" style="background-color: #832215; color: #fff; margin: 2px;" >Clear Filters</button>
-        <button mat-raised-button color="primary" (click)="openPopup()" style="background-color: #832215; color: #fff; margin: 2px;" >Download Table</button>
+        <button mat-raised-button color="primary" *ngIf="hasFiltersData() || sortColumn" (click)="clearFilters()" style="background-color: #832215; color: #fff; margin: 2px;" >{{metaKeys?.clearFilters}}</button>
+        <button mat-raised-button color="primary" (click)="openPopup()" style="background-color: #832215; color: #fff; margin: 2px;" >{{metaKeys?.downloadTable}}</button>
       </div>
     </div>
    <div style="overflow: auto; max-height: 65vh;">
@@ -19,7 +19,7 @@
               swap_vert
             </mat-icon></div>
             <mat-form-field appearance="outline"  *ngIf="isSearchable(column)">
-              <mat-label>Search</mat-label>
+              <mat-label>{{metaKeys?.search}}</mat-label>
               <input
                 matInput
                 type="text"
@@ -30,16 +30,16 @@
               />
               <mat-icon matPrefix>search</mat-icon>
             </mat-form-field>
-            <mat-error *ngIf="activeSearchColumn === column && !isValidSearch">Invalid search text</mat-error>
+            <mat-error *ngIf="activeSearchColumn === column && !isValidSearch">{{metaKeys?.invalidSearch}}</mat-error>
             <mat-form-field appearance="outline" *ngIf="isFilterable(column)">
-              <mat-select [(ngModel)]="filterValues[column]" (selectionChange)="onFilter($event, column)" [multiple]="checkMultiple(column)" placeholder="Select" style="padding: unset !important;" [compareWith]="compareWithArray">
+              <mat-select [(ngModel)]="filterValues[column]" (selectionChange)="onFilter($event, column)" [multiple]="checkMultiple(column)" placeholder="{{metaKeys?.select}}" style="padding: unset !important;" [compareWith]="compareWithArray">
                 <mat-option *ngFor="let option of options" [value]="option.value">
                   {{ option.label }}
                 </mat-option>
               </mat-select>
             </mat-form-field>
             <mat-form-field appearance="outline" *ngIf="isDatePicker(column)">
-              <mat-label>Select date</mat-label>
+              <mat-label>{{metaKeys?.selectDate}}</mat-label>
               <input
                 matInput
                 [matDatepicker]="startPicker"
@@ -69,7 +69,7 @@
    </div>
    <div *ngIf="!dataSource?.data?.length" class="no-data-row">
     <div style="text-align: center; padding: 20px;">
-      No sessions found
+      {{metaKeys?.noData}}
     </div>
   </div>
    <mat-paginator [length]="tableDataCount" [pageSizeOptions]="pageSizeOptions" [defaultPageSize]="pageSize" showFirstLastButtons  (page)="onPageChange($event)"></mat-paginator>
@@ -77,25 +77,25 @@
 
   <div class="overlay" *ngIf="showPopup"></div>
   <mat-dialog-content *ngIf="showPopup" class="centered-popup">
-    <h2>Select Date Range</h2>
+    <h2>{{metaKeys?.selectDateRange}}</h2>
     <mat-form-field appearance="outline">
-      <mat-label>Start Date</mat-label>
+      <mat-label>{{metaKeys?.startDate}}</mat-label>
       <input matInput [matDatepicker]="startPicker" [(ngModel)]="startDate" (ngModelChange)="validateDates(); formatDate(startDate)"
       >
       <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
       <mat-datepicker #startPicker></mat-datepicker>
     </mat-form-field>
     <mat-form-field  appearance="outline">
-      <mat-label>End Date</mat-label>
+      <mat-label>{{metaKeys?.endDate}}</mat-label>
       <input matInput [matDatepicker]="endPicker" [(ngModel)]="endDate" (ngModelChange)="validateDates(); formatDate(endDate)">
       <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
       <mat-datepicker #endPicker></mat-datepicker>
     </mat-form-field>
-    <div *ngIf="dateError" class="error">End date should not be less than start date</div>
-    <div *ngIf="noData" class="error">No sessions found in this time period</div>
+    <div *ngIf="dateError" class="error">{{metaKeys?.reportDateError}}</div>
+    <div *ngIf="noData" class="error">{{metaKeys?.reportTableNoSessions}}</div>
     <div class="actions">
-      <button mat-button (click)="closePopup()">Cancel</button>
-      <button mat-button style="background-color: #832215; color: #fff;" (click)="submitDates()" [disabled]="dateError">Submit</button>
+      <button mat-button (click)="closePopup()">{{metaKeys?.cancel}}</button>
+      <button mat-button style="background-color: #832215; color: #fff;" (click)="submitDates()" [disabled]="dateError">{{metaKeys?.submit}}</button>
     </div>
   </mat-dialog-content>
 </div>
