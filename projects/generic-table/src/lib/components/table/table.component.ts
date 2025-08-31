@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnInit, ViewChild, Input } from '@angular/core';
+import { AfterViewInit, Component, OnInit, ViewChild, Input, Output, EventEmitter } from '@angular/core';
 import { MatTableDataSource } from '@angular/material/table';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
@@ -24,6 +24,7 @@ export class TableComponent implements OnInit, AfterViewInit {
   @Input() legends: any;
   @Input() showDownload: boolean = true;
   @Input() title: any = true;
+  @Output() downloadEvent = new EventEmitter();
   filters: { [key: string]: string[] } = {};
   searches: { [key: string]: string[] } = {};
   filterValues: { [key: string]: any } = {};
@@ -92,6 +93,7 @@ export class TableComponent implements OnInit, AfterViewInit {
         }
         this.initializeTable();
       }
+    },error =>{   console.log("getTableData error in lib:", error);
     })
   }
 
@@ -251,6 +253,7 @@ export class TableComponent implements OnInit, AfterViewInit {
       this.downloadCSV(startDateEpoch,endDateEpoch);
     }
   }
+
   downloadCSV(startDate :any, endDate:any){
     this.url =  this.url.replace(/start_date=[^&]*/, `start_date=${startDate}`);
     this.url =  this.url.replace(/end_date=[^&]*/, `end_date=${endDate}`);
@@ -258,15 +261,25 @@ export class TableComponent implements OnInit, AfterViewInit {
     this.apiService.post({url :  this.url,body:this.body, headers: this.headers}).then((data:any)=>{  
       if(data.result && data.result.reportsDownloadUrl){
         this.noData = false;
-
-        const link = document.createElement('a');
-        link.href = data.result.reportsDownloadUrl;
         const timestamp: number = new Date().getTime();
-        link.download = `${this.title}${timestamp}.csv`; 
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        this.closePopup();
+        console.log("265 ***************>", this.isMobile());
+          if(this.isMobile()){
+            console.log("266");
+            let downloadData = {
+              url :data.result.reportsDownloadUrl,
+              fileName: `${this.title}${timestamp}.csv`
+            }
+            this.downloadEvent.emit(downloadData);
+          }else{
+            console.log("274");
+          const link = document.createElement('a');
+          link.href = data.result.reportsDownloadUrl;
+          link.download = `${this.title}${timestamp}.csv`; 
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+      }
+      this.closePopup();
       }else{
         this.noData = true;
       }
@@ -295,5 +308,4 @@ export class TableComponent implements OnInit, AfterViewInit {
     }
     return o1 === o2;
   }
-
 }
