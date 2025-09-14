@@ -262,16 +262,16 @@ export class TableComponent implements OnInit, AfterViewInit {
       if(data.result && data.result.reportsDownloadUrl){
         this.noData = false;
         const timestamp: number = new Date().getTime();
-        console.log("265 ***************>", this.isMobile());
+        console.log("LIB : 265 ***************>", this.isMobile());
           if(this.isMobile()){
-            console.log("266");
+            console.log("LIB : in mobile view");
             let downloadData = {
               url :data.result.reportsDownloadUrl,
-              fileName: `${this.title}${timestamp}.csv`
+              fileName: `${this.title}${timestamp}`
             }
             this.downloadEvent.emit(downloadData);
           }else{
-            console.log("274");
+            console.log("Lib: not in mobile view");
           const link = document.createElement('a');
           link.href = data.result.reportsDownloadUrl;
           link.download = `${this.title}${timestamp}.csv`; 
