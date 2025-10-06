@@ -95,7 +95,7 @@
     <div *ngIf="noData" class="error">{{metaKeys?.reportTableNoSessions}}</div>
     <div class="actions">
       <button mat-button (click)="closePopup()">{{metaKeys?.cancel}}</button>
-      <button mat-button style="background-color:var(--ion-color-primary); color: #fff;" (click)="submitDates()" [disabled]="dateError">{{metaKeys?.submit}}</button>
+      <button mat-button [ngStyle]="{'background-color': (!startDate || !endDate) ? '#898989' : 'var(--ion-color-primary)'}" style="background-color:var(--ion-color-primary); color: #fff;" (click)="submitDates()" [disabled]="dateError || (!startDate || !endDate)">{{metaKeys?.submit}}</button>
     </div>
   </mat-dialog-content>
 </div>
