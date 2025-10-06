@@ -89,7 +89,7 @@ data : any
           scales: {
             x: {
               ticks: {
-                autoSkip: false, 
+                autoSkip: true, 
               },
               grid: {
                 display: false, 
