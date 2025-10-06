@@ -10,6 +10,12 @@
   min-height: fit-content;
 }
 
+.download-button {
+  background-color: var(--ion-color-primary);
+  color: var(--white);
+  margin: 2px;
+}
+
 .table-wrapper {
   overflow-x: auto;
   width: 100%;
