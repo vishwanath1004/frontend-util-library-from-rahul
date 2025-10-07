@@ -15,7 +15,7 @@
       <ng-container *ngFor="let column of displayedColumns; let i = index" [matColumnDef]="column">
         <th class="mat-header-cell" *matHeaderCellDef style="border-bottom: 1px solid #ccc;">
           <div class="header-container">
-            <div class="header-label" [ngClass]="{'isMobileHeaderLabel': isMobile()}">{{ getHeaderLabel(column) }}  <mat-icon class="material-symbols-outlined" style="cursor: pointer;" (click)="onSort(column)">
+            <div class="header-label" [ngClass]="{'isMobileHeaderLabel': isMobile()}">{{ getHeaderLabel(column) }}  <mat-icon  class="material-symbols-outlined" style="cursor: pointer; overflow: unset;" (click)="onSort(column)">
               swap_vert
             </mat-icon></div>
             <mat-form-field appearance="outline"  *ngIf="isSearchable(column)">
