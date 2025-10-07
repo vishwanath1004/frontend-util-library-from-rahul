@@ -62,7 +62,7 @@ export class GenericChartService {
         let existingDataset = dataset.find((ds:any) => ds.label === label);
         if (item[key] && !isNaN(item[key])) {
           const value = Number(item[key]);
-          if (value !== 0) {
+          // if (value !== 0) {
             if (existingDataset) {
               existingDataset?.data.push(value);
             } else {
@@ -74,7 +74,7 @@ export class GenericChartService {
                 backgroundColor: legend.backgroundColor || this.getRandomColor(),
               });
             }
-        }
+        // }
       }
       }
     });

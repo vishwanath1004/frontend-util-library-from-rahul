@@ -236,6 +236,8 @@ export class TableComponent implements OnInit, AfterViewInit {
 
   closePopup() {
     this.showPopup = false;
+    this.startDate = "";
+    this.endDate = "";
   }
 
   validateDates() {
@@ -260,18 +262,16 @@ export class TableComponent implements OnInit, AfterViewInit {
     this.url =  this.url.replace(/download_csv=[^&]*/, `download_csv=true`);
     this.apiService.post({url :  this.url,body:this.body, headers: this.headers}).then((data:any)=>{  
       if(data.result && data.result.reportsDownloadUrl){
+       
         this.noData = false;
         const timestamp: number = new Date().getTime();
-        console.log("LIB : 265 ***************>", this.isMobile());
           if(this.isMobile()){
-            console.log("LIB : in mobile view");
             let downloadData = {
               url :data.result.reportsDownloadUrl,
               fileName: `${this.title}${timestamp}`
             }
             this.downloadEvent.emit(downloadData);
           }else{
-            console.log("Lib: not in mobile view");
           const link = document.createElement('a');
           link.href = data.result.reportsDownloadUrl;
           link.download = `${this.title}${timestamp}.csv`; 
@@ -279,6 +279,7 @@ export class TableComponent implements OnInit, AfterViewInit {
           link.click();
           document.body.removeChild(link);
       }
+
       this.closePopup();
       }else{
         this.noData = true;
