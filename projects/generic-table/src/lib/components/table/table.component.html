@@ -6,8 +6,8 @@
     <div class="header">
       <div class="title" [ngClass]="{'isMobileTitle': isMobile()}">{{title}}</div>
       <div>
-        <button mat-raised-button color="primary" *ngIf="hasFiltersData() || sortColumn" (click)="clearFilters()" class="download-button" >{{metaKeys?.clearFilters}}</button>
-        <button mat-raised-button color="primary" (click)="openPopup()" class="download-button" >{{metaKeys?.downloadTable}}</button>
+        <button mat-raised-button color="primary" *ngIf="hasFiltersData() || sortColumn" (click)="clearFilters()" class="x-button" >{{metaKeys?.clearFilters}}</button>
+        <button mat-raised-button color="primary" (click)="openPopup()" class="x-button">{{metaKeys?.downloadTable}}</button>
       </div>
     </div>
    <div style="overflow: auto; max-height: 65vh;">
