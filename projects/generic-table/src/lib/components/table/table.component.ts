@@ -141,7 +141,8 @@ export class TableComponent implements OnInit, AfterViewInit {
   initializeTable(): void {
     this.dataSource.data = this.data;
     if(this.data?.length){
-      this.displayedColumns = Object.keys(this.data[0]);
+      const keys = this.columns.map((item: any) => item.key);
+    this.displayedColumns = keys;
     }
   }
   getHeaderLabel(columnKey: string): string {
@@ -216,7 +217,7 @@ export class TableComponent implements OnInit, AfterViewInit {
   }
   isFilterable(columnKey: any) {
     const column = this.columns.find((col: any) => col.key === columnKey);
-    if(column.dataType !== "Date"){
+    if(column?.dataType !== "Date"){
       this.options = column.filters = this.filteredObjects[column.key];
       return column?.filter
     }
@@ -227,7 +228,7 @@ export class TableComponent implements OnInit, AfterViewInit {
   }
 
   isDatePicker(columnKey: any) {
-    const column = this.columns.find((col: any) => col.key === columnKey && col.dataType === 'Date');
+    const column = this.columns.find((col: any) => col.key === columnKey && col?.dataType === 'Date');
     return column?.filter
   }
   openPopup() {
