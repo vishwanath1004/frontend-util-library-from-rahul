@@ -13,7 +13,10 @@ export class BarChartComponent implements OnInit {
   @Input() legends :any;
   @Input() sessionType :any;
   @Input() chartBody: any;
+  @Input() scrollLabel: any;
+  isMonth : boolean = false;
 data : any
+isMobile : boolean = false;
   private chart: Chart | undefined;
   hasData: any = false;
   constructor(private cdr: ChangeDetectorRef, private apiService : GenericChartService) { }
@@ -21,6 +24,8 @@ data : any
   ngOnInit(): void {
   }
   ngAfterViewInit() {
+    this.isMobile = window.innerWidth < 768;
+    this.isMonth = false;
     let url = this.url;
     let headers = this.headers;
       setTimeout(() => {
@@ -43,8 +48,17 @@ data : any
 
   async getChartData(){
     const paylaod  ={url : this.url, headers : this.headers, entityType: this.chartBody}
+    const params = new URL(this.url).searchParams;
+    const groupBy = params.get('group_by');
     this.apiService.post(paylaod).then(async (data: any) => {
-     this.data = await this.apiService.transformApiResponse(data,this.legends );
+      let showMonthName : boolean = false;
+      if(groupBy == "month"){
+        this.isMonth = true;
+        showMonthName = true;
+      }else{
+        this.isMonth = false;
+      }
+     this.data = await this.apiService.transformApiResponse(data,this.legends, showMonthName);
       this.initializeChart();
     })
   }
@@ -65,9 +79,23 @@ data : any
     }
   
     if (chartElement) {
+      const dataLength = this.data.labels?.length || 0;
+      const canvasParent = document.getElementById('chartContainer');
+      if (canvasParent) {
+        const chartWidth = dataLength * (this.isMobile ? 40 : 25); // tweak per bar width
+        chartElement.style.width = `${chartWidth}px`;
+      }
+    
       this.chart = new Chart(chartElement, {
         type: 'bar',
-        data: this.data,
+        data: {
+          ...this.data,
+          datasets: this.data.datasets.map((dataset: any) => ({
+            ...dataset,
+            barThickness: this.isMobile ? 10 : 20,
+            gap:3
+          })),
+        },
         options: {
           responsive: true,
           maintainAspectRatio: false,
@@ -75,37 +103,37 @@ data : any
             legend: {
               display: true,
               position: 'top',
-              align:"end",
+              align: 'end',
               labels: {
                 boxWidth: 12,
-                boxHeight: 12, 
+                boxHeight: 12,
                 padding: 9,
-                font: {
-                  size: 13,
-                },
+                font: { size: 13 },
               },
             },
           },
           scales: {
             x: {
               ticks: {
-                autoSkip: true, 
+                autoSkip: false, // 👈 ensures all labels show
               },
               grid: {
-                display: false, 
+                display: false,
               },
             },
             y: {
               beginAtZero: true,
+              ticks: {
+                stepSize: 1,
+              },
             },
           },
           layout: {
-            padding: {
-              right: 20, 
-            },
+            padding: { right: 20 },
           },
         },
       });
+    
       this.cdr.detectChanges();
     }
   }
