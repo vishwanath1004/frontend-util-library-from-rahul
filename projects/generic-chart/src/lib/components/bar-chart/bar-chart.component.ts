@@ -14,7 +14,6 @@ export class BarChartComponent implements OnInit {
   @Input() sessionType :any;
   @Input() chartBody: any;
   @Input() scrollLabel: any;
-  isMonth : boolean = false;
 data : any
 isMobile : boolean = false;
   private chart: Chart | undefined;
@@ -25,7 +24,6 @@ isMobile : boolean = false;
   }
   ngAfterViewInit() {
     this.isMobile = window.innerWidth < 768;
-    this.isMonth = false;
     let url = this.url;
     let headers = this.headers;
       setTimeout(() => {
@@ -53,10 +51,7 @@ isMobile : boolean = false;
     this.apiService.post(paylaod).then(async (data: any) => {
       let showMonthName : boolean = false;
       if(groupBy == "month"){
-        this.isMonth = true;
         showMonthName = true;
-      }else{
-        this.isMonth = false;
       }
      this.data = await this.apiService.transformApiResponse(data,this.legends, showMonthName);
       this.initializeChart();
